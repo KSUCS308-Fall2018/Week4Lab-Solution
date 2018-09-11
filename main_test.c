@@ -60,20 +60,26 @@ static char * test_add_score() {
     int r1 = add_score("Scott", 0, NULL);
     mu_assert_i("add_score(\"Scott\", 0, NULL) should return FALSE", 0, r1);
 
-    char f2_contents[100];
-    memset(f2_contents, '\0', 100);
-    FILE * f2 = fmemopen(f2_contents, 100, "a");
+    size_t size = 1000;
+    char f2_contents[1000];
+    char * f2_pointer = f2_contents;
+    memset(f2_contents, '\0', 1000);
+    FILE * f2 = open_memstream(&f2_pointer, &size);
     int r2 = add_score("Scott", 15, f2);
+    fflush(f2);
     mu_assert_i("add_score(\"Scott\", 15, f2) should return TRUE", 1, r2);
-    mu_assert_s("Expect value written to file", "Scott 15\n", f2_contents);
+    mu_assert_s("Expect value written to file", "Scott 15\n", f2_pointer);
 
-    char f3_contents[100];
-    memset(f3_contents, '\0', 100);
-    strcpy(f3_contents, "Jim 30\nPam 31\n");
-    FILE * f3 = fmemopen(f3_contents, 100, "a");
+    size_t size3 = 1000;
+    char f3_contents[1000];
+    char * f3_pointer = f3_contents;
+    memset(f3_contents, '\0', 1000);
+    FILE * f3 = open_memstream(&f3_pointer, &size3);
+    fprintf(f3, "Jim 30\nPam 31\n");
     int r3 = add_score("Scott", 15, f3);
+    fflush(f3);
     mu_assert_i("add_score(\"Scott\", 15, f2) should return TRUE", 1, r3);
-    mu_assert_s("Expect value written to file", "Jim 30\nPam 31\nScott 15\n", f3_contents);
+    mu_assert_s("Expect value written to file", "Jim 30\nPam 31\nScott 15\n", f3_pointer);
 
     mu_end_case("add_score");
     return 0;
@@ -92,4 +98,3 @@ int main(int argc, char **argv) {
     return 0;
 }
 #endif
-
